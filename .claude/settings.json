@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm uninstall *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(gh auth *)",
+      "Bash(git --git-dir=D:/Code/flashmind/.git add -A)",
+      "Bash(git --git-dir=D:/Code/flashmind/.git status)",
+      "Read(//c/Users/21900/AppData/**)",
+      "Bash(npm run *)"
+    ]
+  }
+}

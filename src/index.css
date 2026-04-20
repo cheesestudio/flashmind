@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Light theme colors */
+.light {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+}
+
+.light .min-h-screen.relative.overflow-hidden {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+}
+
+.light .bg-white\/10,
+.light .bg-white\/5 {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+.light .bg-white\/10.backdrop-blur-xl {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.light .text-white {
+  color: #1e293b;
+}
+
+.light .text-white\/80 {
+  color: #334155;
+}
+
+.light .text-white\/60 {
+  color: #475569;
+}
+
+.light .text-white\/40 {
+  color: #64748b;
+}
+
+.light .text-white\/50 {
+  color: #64748b;
+}
+
+.light .border-white\/20,
+.light .border-white\/10 {
+  border-color: #e2e8f0;
+}
+
+.light .bg-white\/5 {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.light input,
+.light textarea {
+  color: #1e293b;
+}
+
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Animated background blobs */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animation-delay-3000 {
+  animation-delay: 3s;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

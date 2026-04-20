@@ -3,9 +3,19 @@ import { CardLibrary, Flashcard, StudyStats, Settings } from '../types'
 import * as storage from '../utils/storage'
 import { calculateNextReview, getCardsDueForReview } from '../utils/spacedReview'
 
+const vocabularyFiles = [
+  { file: 'vocabulary/english.json', name: '英语词汇' },
+  { file: 'vocabulary/japanese.json', name: '日语词汇' },
+  { file: 'vocabulary/korean.json', name: '韩语词汇' },
+  { file: 'vocabulary/programming-beginner.json', name: '编程入门' },
+  { file: 'vocabulary/programming-intermediate.json', name: '编程中级' },
+  { file: 'vocabulary/programming-advanced.json', name: '编程高级' },
+  { file: 'vocabulary/life-knowledge.json', name: '生活常识' },
+]
+
 // Prevent StrictMode double execution
 let initialized = false
-let deduplicationComplete = false
+let vocabImported = false
 
 export function useFlashcards() {
   const [libraries, setLibraries] = useState<CardLibrary[]>([])
@@ -13,51 +23,77 @@ export function useFlashcards() {
   const [stats, setStats] = useState<StudyStats>(storage.getStats())
   const [settings, setSettings] = useState<Settings>(storage.getSettings())
 
-  // FULL DEDUPLICATION + CLEANUP - RUNS ONLY ONCE PER APP LIFETIME
+  // Initialize - load JSON files or from localStorage
   useEffect(() => {
-    if (deduplicationComplete) return
-    deduplicationComplete = true
+    if (initialized) return
+    initialized = true
 
-    console.log('🔧 Running full card deduplication...')
+    const init = async () => {
+      let allLibs = storage.getLibraries()
 
-    // 1. Cleanup all duplicate cards
-    const allLibs = storage.getLibraries()
-    let totalRemoved = 0
+      // Load JSON files if localStorage is empty
+      if (allLibs.length === 0 && !vocabImported) {
+        vocabImported = true
+        console.log('Loading vocabulary JSON files...')
 
-    const cleaned = allLibs.map(lib => {
-      const seenFronts = new Set<string>()
-      const uniqueCards = lib.cards.filter(card => {
-        const key = card.front.trim().toLowerCase()
-        if (seenFronts.has(key)) {
-          totalRemoved++
-          return false
+        for (const vocab of vocabularyFiles) {
+          try {
+            const response = await fetch(`/data/${vocab.file}`)
+            const data = await response.json()
+
+            if (data.levels) {
+              const lib = storage.createLibrary(vocab.name)
+
+              Object.values(data.levels).forEach((level: any) => {
+                if (level.words) {
+                  level.words.forEach((word: any) => {
+                    const flashcard: Flashcard = {
+                      id: crypto.randomUUID(),
+                      front: word.word,
+                      back: word.translation + (word.phonetic || word.reading ? `\n${word.phonetic || word.reading}` : ''),
+                      createdAt: Date.now(),
+                      nextReviewAt: Date.now(),
+                      interval: 0,
+                      easeFactor: 2.5
+                    }
+                    lib.cards.push(flashcard)
+                  })
+                }
+              })
+
+              storage.updateLibrary(lib.id, { cards: lib.cards })
+              console.log(`Loaded ${lib.name}: ${lib.cards.length} cards`)
+            }
+          } catch (err) {
+            console.error(`Failed to load ${vocab.name}:`, err)
+          }
         }
-        seenFronts.add(key)
-        return true
+        allLibs = storage.getLibraries()
+      }
+
+      // Deduplication
+      const cleaned = allLibs.map(lib => {
+        const seenFronts = new Set<string>()
+        const uniqueCards = lib.cards.filter(card => {
+          const key = card.front.trim().toLowerCase()
+          if (seenFronts.has(key)) return false
+          seenFronts.add(key)
+          return true
+        })
+        if (uniqueCards.length !== lib.cards.length) {
+          storage.updateLibrary(lib.id, { cards: uniqueCards })
+          return { ...lib, cards: uniqueCards }
+        }
+        return lib
       })
 
-      if (uniqueCards.length !== lib.cards.length) {
-        console.log(`✅ Cleaned ${lib.cards.length - uniqueCards.length} duplicate cards in ${lib.name}`)
-        storage.updateLibrary(lib.id, { cards: uniqueCards })
-        return { ...lib, cards: uniqueCards }
-      }
-      return lib
-    })
-
-    console.log(`✅ Total duplicate cards removed: ${totalRemoved}`)
-
-    // 2. Remove empty libraries
-    const nonEmpty = cleaned.filter(lib => lib.cards.length > 0)
-    if (nonEmpty.length !== cleaned.length) {
-      console.log(`✅ Removed ${cleaned.length - nonEmpty.length} empty libraries`)
-      storage.saveLibraries(nonEmpty)
+      setLibraries(cleaned)
+      setStats(storage.getStats())
+      setSettings(storage.getSettings())
+      console.log('Initialization complete, libraries:', cleaned.length)
     }
 
-    setLibraries(nonEmpty)
-    setStats(storage.getStats())
-    setSettings(storage.getSettings())
-
-    initialized = true
+    init()
   }, [])
 
   const createLibrary = useCallback((name: string, description?: string) => {

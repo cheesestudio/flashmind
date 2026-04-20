@@ -16,16 +16,6 @@ import { extractTextFromPDF } from './utils/pdf'
 
 type View = 'list' | 'editor' | 'study' | 'listening' | 'quiz'
 
-const vocabularyFiles = [
-  { file: 'vocabulary/english.json', name: '英语词汇' },
-  { file: 'vocabulary/japanese.json', name: '日语词汇' },
-  { file: 'vocabulary/korean.json', name: '韩语词汇' },
-  { file: 'vocabulary/programming-beginner.json', name: '编程入门' },
-  { file: 'vocabulary/programming-intermediate.json', name: '编程中级' },
-  { file: 'vocabulary/programming-advanced.json', name: '编程高级' },
-  { file: 'vocabulary/life-knowledge.json', name: '生活常识' },
-]
-
 function App() {
   const {
     libraries,
@@ -53,8 +43,6 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showProgress, setShowProgress] = useState(false)
   const [pdfText, setPdfText] = useState('')
-  const [vocabImported, setVocabImported] = useState(false)
-  const [importRunning, setImportRunning] = useState(false)
   const [searchResults, setSearchResults] = useState<Flashcard[]>([])
   const [learningCards, setLearningCards] = useState<Flashcard[]>([])
 
@@ -67,43 +55,6 @@ function App() {
       root.classList.remove('dark')
     }
   }, [settings.theme])
-
-  // Auto-import vocabulary - prevent duplicate runs, StrictMode safe
-  useEffect(() => {
-    if (vocabImported || libraries.length > 0 || importRunning) return
-
-    setImportRunning(true)
-    const timeoutId = setTimeout(async () => {
-      for (const vocab of vocabularyFiles) {
-        try {
-          const modules = await import(`../data/${vocab.file}`)
-          const data = modules.default
-
-          if (data.levels) {
-            const newLib = createLibrary(vocab.name)
-
-            Object.values(data.levels).forEach((level: any) => {
-              if (level.words) {
-                level.words.forEach((word: any) => {
-                  addCard(
-                    newLib.id,
-                    word.word,
-                    word.translation + (word.phonetic || word.reading ? `\n${word.phonetic || word.reading}` : '')
-                  )
-                })
-              }
-            })
-          }
-        } catch (err) {
-          console.error(`Failed to import ${vocab.name}:`, err)
-        }
-      }
-      setVocabImported(true)
-      setImportRunning(false)
-    }, 100)
-
-    return () => clearTimeout(timeoutId)
-  }, [libraries.length, vocabImported, importRunning])
 
   // Notification - with proper cleanup
   useEffect(() => {

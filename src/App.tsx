@@ -218,14 +218,10 @@ function App() {
     setSearchResults(results)
   }
 
-  // Full cleanup on unmount
+  // Cleanup only known timers on unmount
   useEffect(() => {
     return () => {
-      const highestId = window.setTimeout(() => {}, 0)
-      for (let i = 0; i <= highestId; i++) {
-        clearTimeout(i)
-        clearInterval(i)
-      }
+      // ✅ 安全的清理：只清理语音合成，不暴力清除所有定时器
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel()
       }

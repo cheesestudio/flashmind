@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Flashcard } from '../types'
 
 interface StudyModeProps {
@@ -13,6 +13,7 @@ export function StudyMode({ cards, onReview, onBack }: StudyModeProps) {
   const [isFlipping, setIsFlipping] = useState(false)
   const [showComplete, setShowComplete] = useState(false)
   const [reviewedCount, setReviewedCount] = useState(0)
+
 
   if (cards.length === 0) {
     return (
@@ -54,6 +55,32 @@ export function StudyMode({ cards, onReview, onBack }: StudyModeProps) {
   }
 
   const progress = ((currentIndex + 1) / cards.length) * 100
+
+  // Keyboard shortcuts
+  const handleKeyPress = useCallback((e: KeyboardEvent) => {
+    if (showComplete) return
+
+    if (e.code === 'Space' && !isFlipping) {
+      e.preventDefault()
+      handleFlip()
+    }
+
+    if (showAnswer) {
+      if (e.code === 'Digit1' || e.code === 'Numpad1') handleReview('again')
+      if (e.code === 'Digit2' || e.code === 'Numpad2') handleReview('hard')
+      if (e.code === 'Digit3' || e.code === 'Numpad3') handleReview('good')
+      if (e.code === 'Digit4' || e.code === 'Numpad4') handleReview('easy')
+    }
+
+    if (e.code === 'Escape') {
+      onBack()
+    }
+  }, [showAnswer, isFlipping, showComplete, handleFlip, handleReview, onBack])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [handleKeyPress])
 
   if (showComplete) {
     return (

@@ -143,16 +143,17 @@ export function useFlashcards() {
       easeFactor: 2.5
     }
 
-    lib.cards.push(card)
-    storage.updateLibrary(libraryId, { cards: lib.cards })
+    // ✅ 修复：单次添加，避免重复提交
+    const updatedCards = [...lib.cards, card]
+    storage.updateLibrary(libraryId, { cards: updatedCards })
 
-    // Optimized state update: no full reload
+    // 使用存储后的完整数组更新状态，避免双重追加
     setLibraries(prev => prev.map(l =>
-      l.id === libraryId ? { ...l, cards: [...l.cards, card] } : l
+      l.id === libraryId ? { ...l, cards: updatedCards } : l
     ))
 
     if (currentLibrary?.id === libraryId) {
-      setCurrentLibrary(prev => prev ? { ...prev, cards: [...prev.cards, card] } : null)
+      setCurrentLibrary(prev => prev ? { ...prev, cards: updatedCards } : null)
     }
 
     return card

@@ -5,12 +5,20 @@ const STATS_KEY = 'flashmind_stats'
 const SETTINGS_KEY = 'flashmind_settings'
 
 export function getLibraries(): CardLibrary[] {
-  const data = localStorage.getItem(STORAGE_KEY)
-  return data ? JSON.parse(data) : []
+  try {
+    const data = localStorage.getItem(STORAGE_KEY)
+    return data ? JSON.parse(data) : []
+  } catch {
+    return []
+  }
 }
 
 export function saveLibraries(libraries: CardLibrary[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(libraries))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(libraries))
+  } catch {
+    console.warn('Failed to save libraries to storage')
+  }
 }
 
 export function getLibrary(id: string): CardLibrary | undefined {
@@ -78,18 +86,32 @@ export function importLibrary(json: string): CardLibrary | null {
 
 // Study Statistics
 export function getStats(): StudyStats {
-  const data = localStorage.getItem(STATS_KEY)
-  return data ? JSON.parse(data) : {
-    dailyStats: [],
-    totalReviewed: 0,
-    totalCorrect: 0,
-    streakDays: 0,
-    lastStudyDate: null
+  try {
+    const data = localStorage.getItem(STATS_KEY)
+    return data ? JSON.parse(data) : {
+      dailyStats: [],
+      totalReviewed: 0,
+      totalCorrect: 0,
+      streakDays: 0,
+      lastStudyDate: null
+    }
+  } catch {
+    return {
+      dailyStats: [],
+      totalReviewed: 0,
+      totalCorrect: 0,
+      streakDays: 0,
+      lastStudyDate: null
+    }
   }
 }
 
 export function saveStats(stats: StudyStats): void {
-  localStorage.setItem(STATS_KEY, JSON.stringify(stats))
+  try {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats))
+  } catch {
+    console.warn('Failed to save stats to storage')
+  }
 }
 
 export function recordReview(quality: 'again' | 'hard' | 'good' | 'easy'): void {
@@ -148,12 +170,20 @@ const defaultSettings: Settings = {
 }
 
 export function getSettings(): Settings {
-  const data = localStorage.getItem(SETTINGS_KEY)
-  return data ? { ...defaultSettings, ...JSON.parse(data) } : defaultSettings
+  try {
+    const data = localStorage.getItem(SETTINGS_KEY)
+    return data ? { ...defaultSettings, ...JSON.parse(data) } : defaultSettings
+  } catch {
+    return defaultSettings
+  }
 }
 
 export function saveSettings(settings: Settings): void {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
+  } catch {
+    console.warn('Failed to save settings to storage')
+  }
 }
 
 export function updateSettings(updates: Partial<Settings>): Settings {

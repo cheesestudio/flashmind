@@ -13,6 +13,9 @@ export function StudyMode({ cards, onReview, onBack }: StudyModeProps) {
   const [isFlipping, setIsFlipping] = useState(false)
   const [showComplete, setShowComplete] = useState(false)
   const [reviewedCount, setReviewedCount] = useState(0)
+  const [activeRecallMode, setActiveRecallMode] = useState(false)
+  const [userAnswer, setUserAnswer] = useState('')
+  const [showUserAnswer, setShowUserAnswer] = useState(false)
 
 
   if (cards.length === 0) {
